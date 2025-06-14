@@ -1,10 +1,17 @@
 "use client"
 
 import Image from "next/image";
-import Map, { Marker } from 'react-map-gl/mapbox';
+import { useRef } from "react";
+import Map, { Marker, useMap, MapProvider } from 'react-map-gl/mapbox';
 import 'mapbox-gl/dist/mapbox-gl.css';
 
 export default function Home() {
+
+  const initCenter = {
+    longitude: -69.2547008295843,
+    latitude: 30.897972048254545,
+    zoom: 3.5
+  };
 
   const places = [
     { song: "Alexander Hamilton", event: "出生", location: "英屬背風群島尼維斯島", latitude: 17.13537397597739, longitude: -62.62599687346717 },
@@ -16,34 +23,50 @@ export default function Home() {
     { song: "The Room Where It Happens", event: "內政與財政政策衝突", location: "華盛頓哥倫比亞特區國會山", latitude: 38.886077218944685, longitude: -76.99954101138947 },
     { song: "It’s Quiet Uptown", event: "移居鄉下", location: "曼哈頓上城", latitude: 40.82400392398603, longitude: -73.94480803038849 },
     { song: "Who Lives, Who Dies, Who Tells Your Story", event: "死亡", location: "美國紐約紐約格林尼治村", latitude: 40.73118879709873, longitude: -73.99728782422429 }
-  ]
+  ];
+
+  function MarkerList() {
+    const { mainMap } = useMap()
+
+    return (
+      <>
+        {places.map((place) => (
+          <Marker
+            key={place.song}
+            longitude={place.longitude}
+            latitude={place.latitude}
+            onClick={() => {
+              mainMap?.flyTo({
+                center: [place.longitude, place.latitude],
+                zoom: 10,
+                speed: 1.2,
+                curve: 1.4,
+                essential: true,
+              })
+            }}
+          >
+            <div className="w-2 h-2 bg-orange-500 rounded-full" />
+          </Marker>
+        ))}
+      </>
+    )
+  }
 
   return (
     <>
-      <Map
-        mapboxAccessToken="pk.eyJ1Ijoiamllbmh1YWdvbyIsImEiOiJjbTdsNjY0MjMwNDl2MmtzZHloYXY0czNkIn0.mlD3UGH3wR3ZMJmCuHDpSQ"
-        initialViewState={{
-          longitude: -69.2547008295843,
-          latitude: 30.897972048254545,
-          zoom: 3.5
-        }}
-        style={{ width: "100vw", height: "100vh" }}
-        mapStyle="mapbox://styles/mapbox/dark-v11"
-      >
+      <MapProvider>
+        <Map
+          id="mainMap"
+          mapboxAccessToken="pk.eyJ1Ijoiamllbmh1YWdvbyIsImEiOiJjbTdsNjY0MjMwNDl2MmtzZHloYXY0czNkIn0.mlD3UGH3wR3ZMJmCuHDpSQ"
+          initialViewState={initCenter}
+          style={{ width: "100vw", height: "100vh" }}
+          mapStyle="mapbox://styles/mapbox/dark-v11"
+        >
 
-        {places.map((place) => (
-          <Marker
-            longitude={place.longitude}
-            latitude={place.latitude}
-            key={place.song}
-          >
+          <MarkerList />
 
-            <div className='w-2 h-2 bg-orange-500 rounded-full'></div>
-
-          </Marker>
-        ))}
-
-      </Map>
+        </Map>
+      </MapProvider>
     </>
   );
 }
