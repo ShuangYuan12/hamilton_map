@@ -1,8 +1,8 @@
-"use client"
+"use client";
 
 import Image from "next/image";
 import { useRef, useState, useEffect } from "react";
-import Map, { Marker, useMap, MapProvider } from 'react-map-gl/mapbox';
+import Map, { Marker, Layer, Source, useMap, MapProvider } from 'react-map-gl/mapbox';
 import 'mapbox-gl/dist/mapbox-gl.css';
 
 const places = [
@@ -19,12 +19,82 @@ const places = [
 
 export default function Home() {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [lineCoordinates, setLineCoordinates] = useState([]); // 儲存所有線的座標
+  const [dashProgress, setDashProgress] = useState({}); // 每條線的動畫進度
 
   const initCenter = {
     longitude: -69.2547008295843,
     latitude: 30.897972048254545,
     zoom: 3.5
   };
+
+  // 虛線逐段出現動畫
+  useEffect(() => {
+    if (lineCoordinates.length > 0) {
+      const animate = () => {
+        setDashProgress((prev) => {
+          const newProgress = { ...prev };
+          lineCoordinates.forEach((_, index) => {
+            if (!newProgress[index] || newProgress[index] < 1) {
+              newProgress[index] = (newProgress[index] || 0) + 0.01; // 每條線獨立進度
+            }
+          });
+          return newProgress;
+        });
+        requestAnimationFrame(animate);
+      };
+      const animationId = requestAnimationFrame(animate);
+      return () => cancelAnimationFrame(animationId);
+    }
+  }, [lineCoordinates]);
+
+  // 當 currentIndex 變化時更新線段
+  useEffect(() => {
+    if (currentIndex > 0) {
+      const newLine = [
+        [places[currentIndex - 1].longitude, places[currentIndex - 1].latitude],
+        [places[currentIndex].longitude, places[currentIndex].latitude]
+      ];
+      setLineCoordinates((prev) => {
+        const newCoordinates = [...prev];
+        newCoordinates[currentIndex - 1] = newLine; // 更新或添加線段
+        return newCoordinates;
+      });
+      setDashProgress((prev) => ({ ...prev, [currentIndex - 1]: 0 })); // 重置新線動畫
+    }
+  }, [currentIndex]);
+
+  // 為每條線生成圖層
+  const lineLayers = lineCoordinates.map((_, index) => ({
+    id: `dashed-line-${index}`,
+    type: 'line',
+    source: `line-source-${index}`,
+    paint: {
+      'line-color': '#F97316', 
+      'line-width': 6, // 加粗虛線
+      'line-dasharray': [
+        2 * (dashProgress[index] || 0),
+        Math.max(2 * (1 - (dashProgress[index] || 0)), 0) 
+      ]
+    }
+  }));
+
+  // 為每條線生成 GeoJSON
+  const lineGeoJSONs = lineCoordinates.map((coords, index) => ({
+    id: `line-source-${index}`,
+    data: {
+      type: 'FeatureCollection',
+      features: coords.length > 0 ? [
+        {
+          type: 'Feature',
+          geometry: {
+            type: 'LineString',
+            coordinates: coords
+          }
+        }
+      ] : []
+    }
+  }));
 
   return (
     <MapProvider>
@@ -40,6 +110,13 @@ export default function Home() {
           currentIndex={currentIndex}
           setCurrentIndex={setCurrentIndex}
         />
+        {lineGeoJSONs.map((geojson, index) => (
+          geojson.data.features.length > 0 && (
+            <Source key={geojson.id} id={geojson.id} type="geojson" data={geojson.data}>
+              <Layer {...lineLayers[index]} />
+            </Source>
+          )
+        ))}
       </Map>
     </MapProvider>
   );
@@ -92,14 +169,18 @@ function MarkerList({ places, currentIndex, setCurrentIndex }) {
         </button>
       </div>
 
-      {places.map((p) => (
+      {places.map((p, index) => (
         <Marker
           key={p.id}
           longitude={p.longitude}
           latitude={p.latitude}
           onClick={() => setCurrentIndex(places.findIndex(x => x.id === p.id))}
         >
-          <div className="w-2 h-2 bg-orange-500 rounded-full" />
+          <div
+            className={`w-2 h-2 rounded-full ${
+              index <= currentIndex ? 'bg-orange-500' : 'bg-gray-500'
+            }`}
+          />
         </Marker>
       ))}
     </>
