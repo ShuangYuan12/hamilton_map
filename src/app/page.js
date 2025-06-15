@@ -5,7 +5,7 @@ import { useRef, useState, useEffect } from "react";
 import Map, { Marker, Layer, Source, useMap, MapProvider } from 'react-map-gl/mapbox';
 import 'mapbox-gl/dist/mapbox-gl.css';
 
-const places = [
+const Hamiltonplaces = [
   { id: 1, song: "Alexander Hamilton", event: "出生", location: "英屬背風群島尼維斯島", latitude: 17.13537397597739, longitude: -62.62599687346717 },
   { id: 2, song: "My Shot", event: "學院崛起", location: "伊莉莎白鎮學院", latitude: 40.781307026849134, longitude: -74.43696283038658 },
   { id: 3, song: "Satisfied", event: "結婚", location: "漢密爾頓住宅國家紀念區", latitude: 40.849825752958175, longitude: -73.95964423157923 },
@@ -17,16 +17,32 @@ const places = [
   { id: 9, song: "Who Lives, Who Dies, Who Tells Your Story", event: "死亡", location: "紐約格林尼治村", latitude: 40.73118879709873, longitude: -73.99728782422429 }
 ];
 
+const Burrplaces = [
+  { id: 1, song: "Aaron Burr, Sir", event: "出生", location: "英屬美洲紐澤西省紐華克", latitude: 40.74390390983216, longitude: -74.17141241806374 },
+  { id: 2, song: "My Shot", event: "學校", location: "伊莉莎白鎮學院", latitude: 40.781307026849134, longitude: -74.43696283038658 },
+  { id: 3, song: "The room where it happened", event: "總統落選", location: "美國眾議院", latitude: 38.88996496158612, longitude: -77.00904648606979 },
+  { id: 4, song: "Ten Duel Commandments", event: "伯爾-漢密爾頓決鬥", location: "新澤西州的威霍肯", latitude: 40.7700787163784, longitude: -74.01691886845401 },
+  { id: 5, song: "Who Lives, Who Dies, Who Tells Your Story", event: "死亡", location: "普林斯頓公墓", latitude: 40.35414713183177, longitude: -74.66006837116463 }
+];
+
 export default function Home() {
+  const [HumanPlace, setHumanPlace] = useState(Hamiltonplaces)
   const [currentIndex, setCurrentIndex] = useState(0);
   const [lineCoordinates, setLineCoordinates] = useState([]); // 儲存所有線的座標
   const [dashProgress, setDashProgress] = useState({}); // 每條線的動畫進度
+  const [lineColors, setLineColors] = useState([]);
 
   const initCenter = {
     longitude: -69.2547008295843,
     latitude: 30.897972048254545,
     zoom: 3.5
   };
+
+  let otherPlace = Burrplaces;
+
+  useEffect(() => {
+    otherPlace = HumanPlace == Hamiltonplaces ? Burrplaces : Hamiltonplaces;
+  }, [HumanPlace]);
 
   // 虛線逐段出現動畫
   useEffect(() => {
@@ -52,13 +68,18 @@ export default function Home() {
   useEffect(() => {
     if (currentIndex > 0) {
       const newLine = [
-        [places[currentIndex - 1].longitude, places[currentIndex - 1].latitude],
-        [places[currentIndex].longitude, places[currentIndex].latitude]
+        [HumanPlace[currentIndex - 1].longitude, HumanPlace[currentIndex - 1].latitude],
+        [HumanPlace[currentIndex].longitude, HumanPlace[currentIndex].latitude]
       ];
       setLineCoordinates((prev) => {
         const newCoordinates = [...prev];
         newCoordinates[currentIndex - 1] = newLine; // 更新或添加線段
         return newCoordinates;
+      });
+      setLineColors((prev) => {
+        const newColors = [...prev];
+        newColors[currentIndex - 1] = HumanPlace == Hamiltonplaces ? "#F97316" : "#01814A";
+        return newColors;
       });
       setDashProgress((prev) => ({ ...prev, [currentIndex - 1]: 0 })); // 重置新線動畫
     }
@@ -70,11 +91,11 @@ export default function Home() {
     type: 'line',
     source: `line-source-${index}`,
     paint: {
-      'line-color': '#F97316', 
+      'line-color': lineColors[index],
       'line-width': 6, // 加粗虛線
       'line-dasharray': [
         2 * (dashProgress[index] || 0),
-        Math.max(2 * (1 - (dashProgress[index] || 0)), 0) 
+        Math.max(2 * (1 - (dashProgress[index] || 0)), 0)
       ]
     }
   }));
@@ -105,11 +126,41 @@ export default function Home() {
         style={{ width: "100vw", height: "100vh" }}
         mapStyle="mapbox://styles/mapbox/dark-v11"
       >
+
+        {otherPlace.map((p) => (
+          <Marker
+            key={p.id}
+            longitude={p.longitude}
+            latitude={p.latitude}
+          >
+            <div
+              className={"w-2 h-2 rounded-full bg-gray-500"}
+            />
+          </Marker>
+        ))}
+
         <MarkerList
-          places={places}
+          places={HumanPlace}
           currentIndex={currentIndex}
           setCurrentIndex={setCurrentIndex}
         />
+
+        <div className="absolute top-120 left-10 flex flex-col gap-5">
+          <button
+            onClick={() => { setHumanPlace(Hamiltonplaces); setCurrentIndex(0); }}
+            className="w-30 h-10 rounded-full bg-yellow-500"
+          >
+            Hamilton
+          </button>
+
+          <button
+            onClick={() => { setHumanPlace(Burrplaces); setCurrentIndex(0); }}
+            className="w-30 h-10 rounded-full bg-yellow-500"
+          >
+            Burr
+          </button>
+        </div>
+
         {lineGeoJSONs.map((geojson, index) => (
           geojson.data.features.length > 0 && (
             <Source key={geojson.id} id={geojson.id} type="geojson" data={geojson.data}>
@@ -117,6 +168,7 @@ export default function Home() {
             </Source>
           )
         ))}
+
       </Map>
     </MapProvider>
   );
@@ -136,7 +188,7 @@ function MarkerList({ places, currentIndex, setCurrentIndex }) {
       curve: 1.4,
       essential: true
     });
-  }, [currentIndex, mainMap]);
+  }, [places, currentIndex, mainMap]);
 
   const next = () => {
     setCurrentIndex((prev) => (prev + 1) % places.length);
@@ -177,9 +229,8 @@ function MarkerList({ places, currentIndex, setCurrentIndex }) {
           onClick={() => setCurrentIndex(places.findIndex(x => x.id === p.id))}
         >
           <div
-            className={`w-2 h-2 rounded-full ${
-              index <= currentIndex ? 'bg-orange-500' : 'bg-gray-500'
-            }`}
+            className={`w-2 h-2 rounded-full ${index <= currentIndex ? (places == Hamiltonplaces ? 'bg-orange-500' : '#01814A') : 'bg-blue-200'
+              }`}
           />
         </Marker>
       ))}
