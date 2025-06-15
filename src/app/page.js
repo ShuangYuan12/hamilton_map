@@ -12,7 +12,7 @@ const Hamiltonplaces = [
     audio: "/audio/1.mp3", latitude: 17.13537397597739, longitude: -62.62599687346717
   },
   {
-    id: 2, song: "Wait for it", event: "於學院崛起", location: "伊莉莎白鎮學院",
+    id: 2, song: "My shot", event: "於學院崛起", location: "伊莉莎白鎮學院",
     audio: "/audio/2.mp3", latitude: 40.781307026849134, longitude: -74.43696283038658
   },
   {
@@ -51,7 +51,7 @@ const Burrplaces = [
     audio: "/audio/2-1.mp3", latitude: 40.74390390983216, longitude: -74.17141241806374
   },
   {
-    id: 2, song: "My Shot", event: "學校", location: "伊莉莎白鎮學院",
+    id: 2, song: "Wait for it", event: "學校", location: "伊莉莎白鎮學院",
     audio: "/audio/2-2.mp3", latitude: 40.781307026849134, longitude: -74.43696283038658
   },
   {
