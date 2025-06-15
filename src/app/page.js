@@ -13,7 +13,7 @@ const Hamiltonplaces = [
     audio: "/audio/1.mp3", latitude: 17.13537397597739, longitude: -62.62599687346717
   },
   {
-    id: 2, song: "My Shot", event: "學院崛起", location: "伊莉莎白鎮學院",
+    id: 2, song: "Wait for it", event: "於學院崛起", location: "伊莉莎白鎮學院",
     audio: "/audio/2.mp3", latitude: 40.781307026849134, longitude: -74.43696283038658
   },
   {
@@ -25,7 +25,7 @@ const Hamiltonplaces = [
     audio: "/audio/4.mp3", latitude: 37.241792067138796, longitude: -76.5216979492628
   },
   {
-    id: 5, song: "Non-Stop", event: "寫論文", location: "美國獨立紀念館",
+    id: 5, song: "Non-Stop", event: "起草美國憲法", location: "美國獨立紀念館",
     audio: "/audio/5.mp3", latitude: 39.94898882024012, longitude: -75.14998038809651
   },
   {
@@ -47,11 +47,16 @@ const Hamiltonplaces = [
 ];
 
 const Burrplaces = [
-  { id: 1, song: "Aaron Burr, Sir", event: "出生", location: "英屬美洲紐澤西省紐華克", latitude: 40.74390390983216, longitude: -74.17141241806374 },
-  { id: 2, song: "My Shot", event: "學校", location: "伊莉莎白鎮學院", latitude: 40.781307026849134, longitude: -74.43696283038658 },
-  { id: 3, song: "The room where it happened", event: "總統落選", location: "美國眾議院", latitude: 38.88996496158612, longitude: -77.00904648606979 },
-  { id: 4, song: "Ten Duel Commandments", event: "伯爾-漢密爾頓決鬥", location: "新澤西州的威霍肯", latitude: 40.7700787163784, longitude: -74.01691886845401 },
-  { id: 5, song: "Who Lives, Who Dies, Who Tells Your Story", event: "死亡", location: "普林斯頓公墓", latitude: 40.35414713183177, longitude: -74.66006837116463 }
+  { id: 1, song: "Aaron Burr, Sir", event: "出生", location: "英屬美洲紐澤西省紐華克", 
+    audio: "/audio/2-1.mp3", latitude: 40.74390390983216, longitude: -74.17141241806374 },
+  { id: 2, song: "My Shot", event: "學校", location: "伊莉莎白鎮學院", 
+    audio: "/audio/2-2.mp3",latitude: 40.781307026849134, longitude: -74.43696283038658 },
+  { id: 3, song: "The room where it happened", event: "總統落選", location: "美國眾議院", 
+    audio: "/audio/7.mp3",latitude: 38.88996496158612, longitude: -77.00904648606979 },
+  { id: 4, song: "The World Was Wide Enough from HAMILTON", event: "伯爾-漢密爾頓決鬥", location: "新澤西州的威霍肯", 
+    audio: "/audio/2-4.mp3",latitude: 40.7700787163784, longitude: -74.01691886845401 },
+  { id: 5, song: "Who Lives, Who Dies, Who Tells Your Story", event: "死亡", location: "普林斯頓公墓", 
+    audio: "/audio/9.mp3", latitude: 40.35414713183177, longitude: -74.66006837116463 }
 ];
 
 export default function Home() {
@@ -186,7 +191,7 @@ export default function Home() {
           duration={duration}
         />
 
-        <div className="absolute top-120 left-10 flex flex-col gap-5">
+        <div className="absolute top-150 left-10 flex flex-col gap-5">
           <button
             onClick={() => { setHumanPlace(Hamiltonplaces); setCurrentIndex(0); }}
             className="w-30 h-10 rounded-full bg-yellow-500"
